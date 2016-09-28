@@ -1,0 +1,7 @@
+{
+    "require": {
+        "mongodb/mongodb": "^1.0",
+        "twbs/bootstrap": "^3.3",
+        "php": "^7.0"
+    }
+}
