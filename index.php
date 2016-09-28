@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--
-    Simples projeto exemplo usando as tecnologias mongoDB + Bootstrap + PHP7
+    Simples projeto exemplo CRUD usando as tecnologias mongoDB + Bootstrap + PHP7
     *comentários/sugestões são bem vindas
-    Sample simple project using the technologies mongoDB + Boostsrap + PHP7
+    Sample simple CRUD project using the technologies mongoDB + Boostsrap + PHP7
     *comments/suggestions are welcome
                         jorgeley@gmail.com / https://github.com/jorgeley
 -->
