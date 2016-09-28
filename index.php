@@ -66,8 +66,7 @@
                                         ['_id' => new MongoDB\BSON\ObjectId($_POST['id'])], //who to update?
                                         ['$set' => [ //new data
                                                 'name' => $_POST['name'],
-                                                'team' => $_POST['team']
-                                            ]
+                                                'team' => $_POST['team'] ]
                                         ]);
                     else
                         $drivers->insertOne([ //add new driver
