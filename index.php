@@ -25,7 +25,7 @@
                 try{
                     $mongo = new MongoDB\Client("mongodb://localhost");
                 }catch (MongoDB\Client\Exception $exception){
-                    echo "Exception: ", $e->getMessage(), "\n";
+                    echo ":( Sorry ", $e->getMessage(), "\n";
                     echo "In file: ", $e->getFile(), "\n";
                     echo "On line: ", $e->getLine(), "\n";
                 }
