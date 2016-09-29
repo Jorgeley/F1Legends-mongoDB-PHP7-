@@ -25,22 +25,57 @@
                 try{
                     $mongo = new MongoDB\Client("mongodb://localhost");
                 }catch (MongoDB\Client\Exception $exception){
-                    echo ":( Sorry ", $e->getMessage(), "\n";
-                    echo "In file: ", $e->getFile(), "\n";
-                    echo "On line: ", $e->getLine(), "\n";
+                    error($exception);
                 }
                 $drivers = $mongo->f1Legends->driver; //the collection
                 
                 //search for a driver by his id or delete him
                 if ($_GET['id'] ?? null)
                     if ($_GET['op'] == 'v')
-                        $driver = $drivers->findOne([ //search for a driver by his id
-                                                '_id' => new MongoDB\BSON\ObjectId($_GET['id'])
-                        ]);
+                        try {
+                            $driver = $drivers->findOne([ //search for a driver by his id
+                                                    '_id' => new MongoDB\BSON\ObjectId($_GET['id'])
+                            ]);
+                        }catch(MongoDB\Driver\Exception\ConnectionTimeoutException $exception){
+                            error($exception);
+                        }catch(MongoDB\Driver\Exception\InvalidArgumentException $exception){
+                            error($exception);
+                        }
                     elseif ($_GET['op'] == 'x')
-                        $drivers->deleteOne([ //delete the driver by his id
-                                        '_id' => new MongoDB\BSON\ObjectId($_GET['id'])
-                        ]);
+                        try{
+                            $drivers->deleteOne([ //delete the driver by his id
+                                            '_id' => new MongoDB\BSON\ObjectId($_GET['id'])
+                            ]);
+                        }catch(MongoDB\Driver\Exception\ConnectionTimeoutException $exception){
+                            error($exception);
+                        }catch(MongoDB\Driver\Exception\InvalidArgumentException $exception){
+                            error($exception);
+                        }
+
+                //add or update new driver
+                if ($_POST)
+                    if ($_POST['id'] ?? null)
+                        try{
+                            $drivers->updateOne( //updates the driver
+                                            ['_id' => new MongoDB\BSON\ObjectId($_POST['id'])], //who to update?
+                                            ['$set' => [ //new data
+                                                    'name' => $_POST['name'],
+                                                    'team' => $_POST['team'] ]
+                                            ]);
+                        }catch(MongoDB\Driver\Exception\ConnectionTimeoutException $exception){
+                            error($exception);
+                        }catch(MongoDB\Driver\Exception\InvalidArgumentException $exception){
+                            error($exception);
+                        }
+                    else
+                        try{
+                            $drivers->insertOne([ //add new driver
+                                        'name' => $_POST['name'],
+                                        'team' => $_POST['team']
+                            ]);
+                        }catch(MongoDB\Driver\Exception\ConnectionTimeoutException $exception){
+                            error($exception);
+                        }
             ?>
             
             <!-- drivers CRUD form -->
@@ -58,23 +93,6 @@
                 <i>mongoDB+PHP7</i>
             </form>
             
-            <?php                
-                //add or update new driver
-                if ($_POST)
-                    if ($_POST['id'] ?? null)
-                        $drivers->updateOne( //updates the driver
-                                        ['_id' => new MongoDB\BSON\ObjectId($_POST['id'])], //who to update?
-                                        ['$set' => [ //new data
-                                                'name' => $_POST['name'],
-                                                'team' => $_POST['team'] ]
-                                        ]);
-                    else
-                        $drivers->insertOne([ //add new driver
-                                    'name' => $_POST['name'],
-                                    'team' => $_POST['team']
-                        ]);
-            ?>
-            
             <!-- drivers table -->
             <div class="table-responsive">
                 <table class="table table-striped">
@@ -87,12 +105,19 @@
                     </thead>
                     <tbody><?php
                         //list the drivers
-                        foreach ($drivers->find() as $driver){?>
-                            <tr>
-                              <td><?=$driver->name?></td>
-                              <td><?=$driver->team?></td>
-                              <td><a href="?op=v&id=<?=$driver->_id?>">...</a> | <a href="?op=x&id=<?=$driver->_id?>">X</a></td>
-                            </tr><?php
+                        try{
+                            foreach ($drivers->find() as $driver){?>
+                                <tr>
+                                  <td><?=$driver->name?></td>
+                                  <td><?=$driver->team?></td>
+                                  <td>
+                                      <a href="?op=v&id=<?=$driver->_id?>">...</a> | 
+                                      <a href="?op=x&id=<?=$driver->_id?>">X</a>
+                                  </td>
+                                </tr><?php
+                            }                            
+                        }catch(MongoDB\Driver\Exception\ConnectionTimeoutException $exception){
+                            error($exception);
                         }?>
                     </tbody>
                 </table>
@@ -103,3 +128,12 @@
     </body>
     
 </html>
+
+<?php
+    //just an auxiliar function to show exceptions
+    function error($exception){
+        echo "<h3>:( Sorry </h3>", $exception->getMessage(), "\n"
+            ."In file: ", $exception->getFile(), "\n"
+            ."On line: ", $exception->getLine(), "\n";
+    }
+?>
